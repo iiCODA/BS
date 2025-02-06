@@ -35,9 +35,9 @@ class PostController extends Controller
             'content' => 'required',
         ]);
 
-        $user = Auth::user();
-        $user->posts()->create($request->only('title', 'content'));
-        return redirect()->route('posts.index');
+        Auth::user()->posts()->create($request->only('title', 'content'));
+
+        return redirect()->route('posts.index')->with('success', 'Post created successfully.');
     }
 
     /**
@@ -53,6 +53,10 @@ class PostController extends Controller
      */
     public function edit(Post $post)
     {
+        if ($post->user_id !== Auth::id()) {
+            abort(403, 'Unauthorized action.');
+        }
+
         return view('posts.edit', compact('post'));
     }
 
@@ -61,12 +65,18 @@ class PostController extends Controller
      */
     public function update(Request $request, Post $post)
     {
+        if ($post->user_id !== Auth::id()) {
+            abort(403, 'Unauthorized action.');
+        }
+
         $request->validate([
             'title' => 'required',
             'content' => 'required',
         ]);
+
         $post->update($request->only('title', 'content'));
-        return redirect()->route('posts.index');
+
+        return redirect()->route('posts.index')->with('success', 'Post updated successfully.');
     }
 
     /**
@@ -74,7 +84,12 @@ class PostController extends Controller
      */
     public function destroy(Post $post)
     {
+        if ($post->user_id !== Auth::id()) {
+            abort(403, 'Unauthorized action.');
+        }
+
         $post->delete();
-        return redirect()->route('posts.index');
+
+        return redirect()->route('posts.index')->with('success', 'Post deleted successfully.');
     }
 }

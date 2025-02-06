@@ -9,12 +9,10 @@
 </head>
 
 <body class="bg-gray-100">
-    <!-- Sidebar and Main Content Wrapper -->
     <div class="flex min-h-screen">
         <!-- Sidebar -->
         <div
             class="bg-gray-800 text-white w-64 space-y-6 py-7 px-2 fixed inset-y-0 left-0 transform -translate-x-full md:translate-x-0 transition duration-200 ease-in-out">
-            <!-- Logo -->
             <div class="text-white flex items-center space-x-2 px-4">
                 <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"
                     xmlns="http://www.w3.org/2000/svg">
@@ -24,10 +22,7 @@
                 </svg>
                 <span class="text-2xl font-extrabold">Blog</span>
             </div>
-
-            <!-- Navigation Links -->
             <nav>
-
                 <a href="{{ route('posts.create') }}"
                     class="block py-2.5 px-4 rounded transition duration-200 hover:bg-gray-700">
                     Create Post
@@ -69,30 +64,50 @@
                 </div>
             </header>
 
-            <!-- Main Content Area -->
             <main class="p-6">
-                <!-- Create New Post Button -->
                 <a href="{{ route('posts.create') }}"
                     class="bg-blue-500 text-white px-4 py-2 rounded mb-4 inline-block">
                     Create New Post
                 </a>
 
-                <!-- Blog Posts List -->
                 <div class="space-y-6">
                     @foreach ($posts as $post)
                         <div class="bg-white p-6 rounded-lg shadow-md">
+                            <!-- Publisher Info -->
+                            <div class="flex items-center mb-4">
+                                <!-- Profile Photo -->
+                                @if ($post->user->profile_photo)
+                                    <img src="{{ asset('storage/' . $post->user->profile_photo) }}"
+                                        alt="{{ $post->user->name }}" class="w-10 h-10 rounded-full object-cover mr-3">
+                                @else
+                                    <div
+                                        class="w-10 h-10 bg-gray-300 rounded-full flex items-center justify-center mr-3">
+                                        <span class="text-gray-600 text-sm">{{ substr($post->user->name, 0, 1) }}</span>
+                                    </div>
+                                @endif
+
+                                <!-- Publisher Name -->
+                                <div>
+                                    <p class="font-semibold text-gray-800">{{ $post->user->name }}</p>
+                                    <p class="text-sm text-gray-500">{{ $post->created_at->diffForHumans() }}</p>
+                                </div>
+                            </div>
+
+                            <!-- Post Content -->
                             <h2 class="text-2xl font-semibold">{{ $post->title }}</h2>
                             <p class="text-gray-700 mt-2">{{ Str::limit($post->content, 200) }}</p>
                             <div class="mt-4">
                                 <a href="{{ route('posts.show', $post) }}"
                                     class="text-blue-500 hover:underline">View</a>
-                                <a href="{{ route('posts.edit', $post) }}"
-                                    class="text-yellow-500 hover:underline ml-4">Edit</a>
-                                <form action="{{ route('posts.destroy', $post) }}" method="POST" class="inline">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button type="submit" class="text-red-500 hover:underline ml-4">Delete</button>
-                                </form>
+                                @if ($post->user_id === Auth::id())
+                                    <a href="{{ route('posts.edit', $post) }}"
+                                        class="text-yellow-500 hover:underline ml-4">Edit</a>
+                                    <form action="{{ route('posts.destroy', $post) }}" method="POST" class="inline">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit" class="text-red-500 hover:underline ml-4">Delete</button>
+                                    </form>
+                                @endif
                             </div>
                         </div>
                     @endforeach
