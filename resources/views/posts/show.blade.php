@@ -44,10 +44,54 @@
             <p class="text-gray-300 break-words whitespace-pre-wrap">{{ $post->content }}</p>
 
 
+
+
             <!-- Post Image -->
             @if ($post->post_photo)
                 <img src="{{ asset('storage/' . $post->post_photo) }}" alt="Post Image"
                     class="w-full max-h-[500px] object-contain rounded-lg mb-4">
+            @endif
+
+            <h2 class="text-xl font-semibold mt-8 mb-4">Comments</h2>
+
+            <div class="space-y-4">
+                @foreach ($post->comments as $comment)
+                    <div class="bg-gray-700 p-4 rounded-lg flex items-start">
+                        <!-- Profile Photo -->
+                        @if ($comment->user->profile_photo)
+                            <img src="{{ asset('storage/' . $comment->user->profile_photo) }}"
+                                alt="{{ $comment->user->name }}" class="w-10 h-10 rounded-full object-cover mr-3">
+                        @else
+                            <div
+                                class="w-10 h-10 bg-gray-600 rounded-full flex items-center justify-center text-gray-300 text-sm mr-3">
+                                {{ substr($comment->user->name, 0, 1) }}
+                            </div>
+                        @endif
+
+                        <!-- Comment Content -->
+                        <div>
+                            <p class="text-sm text-gray-300">
+                                <strong>{{ $comment->user->name }}</strong> •
+                                {{ $comment->created_at->diffForHumans() }}
+                            </p>
+                            <p class="text-gray-200 mt-2">{{ $comment->content }}</p>
+                        </div>
+                    </div>
+                @endforeach
+            </div>
+
+
+            @if (Auth::check())
+                <form action="{{ route('comments.store', $post->id) }}" method="POST" class="mt-6">
+                    @csrf
+                    <textarea name="content" rows="3" class="w-full p-3 rounded-lg bg-gray-800 text-gray-100"
+                        placeholder="Write a comment..." required></textarea>
+                    <button type="submit"
+                        class="mt-3 bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded-lg">Post Comment</button>
+                </form>
+            @else
+                <p class="text-gray-400 mt-6">You must <a href="{{ route('login') }}" class="text-blue-400">log in</a>
+                    to comment.</p>
             @endif
 
             <!-- Edit/Delete Buttons (for the post owner) -->
