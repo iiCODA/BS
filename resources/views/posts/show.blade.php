@@ -43,9 +43,6 @@
             <!-- Post Content -->
             <p class="text-gray-300 break-words whitespace-pre-wrap">{{ $post->content }}</p>
 
-
-
-
             <!-- Post Image -->
             @if ($post->post_photo)
                 <img src="{{ asset('storage/' . $post->post_photo) }}" alt="Post Image"
@@ -55,7 +52,7 @@
             <h2 class="text-xl font-semibold mt-8 mb-4">Comments</h2>
 
             <div class="space-y-4">
-                @foreach ($post->comments as $comment)
+                @foreach ($post->comments->take(3) as $comment)
                     <div class="bg-gray-700 p-4 rounded-lg flex items-start">
                         <!-- Profile Photo -->
                         @if ($comment->user->profile_photo)
@@ -79,6 +76,16 @@
                     </div>
                 @endforeach
             </div>
+
+            @if ($post->comments->count() > 3)
+                <div class="mt-4">
+                    <a href="{{ route('posts.comments', $post->id) }}"
+                        class="text-blue-400 hover:text-blue-300 transition duration-200">
+                        View all comments ({{ $post->comments->count() }})
+                    </a>
+                </div>
+            @endif
+
 
 
             @if (Auth::check())

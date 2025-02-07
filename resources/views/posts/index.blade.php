@@ -58,7 +58,6 @@
                     <div class="bg-gray-800 p-6 rounded-lg shadow-lg">
                         <!-- Publisher Info -->
                         <div class="flex items-center mb-4">
-                            <!-- Profile Photo -->
                             @if ($post->user->profile_photo)
                                 <img src="{{ asset('storage/' . $post->user->profile_photo) }}"
                                     alt="{{ $post->user->name }}" class="w-10 h-10 rounded-full object-cover mr-3">
@@ -67,8 +66,6 @@
                                     <span class="text-gray-300 text-sm">{{ substr($post->user->name, 0, 1) }}</span>
                                 </div>
                             @endif
-
-                            <!-- Publisher Name and Timestamp -->
                             <div>
                                 <p class="font-semibold">{{ $post->user->name }}</p>
                                 <p class="text-sm text-gray-400">{{ $post->created_at->diffForHumans() }}</p>
@@ -87,6 +84,43 @@
                                 class="w-full h-64 object-cover rounded-lg mb-4">
                         @endif
 
+                        <!-- Show One Comment (if exists) -->
+                        @if ($post->comments->count() > 0)
+                            <div class="bg-gray-700 p-4 rounded-lg mt-4 flex items-start">
+                                @php
+                                    $latestComment = $post->comments->first();
+                                @endphp
+
+                                <!-- Commenter Profile Photo -->
+                                @if ($latestComment->user->profile_photo)
+                                    <img src="{{ asset('storage/' . $latestComment->user->profile_photo) }}"
+                                        alt="{{ $latestComment->user->name }}"
+                                        class="w-8 h-8 rounded-full object-cover mr-3">
+                                @else
+                                    <div
+                                        class="w-8 h-8 bg-gray-600 rounded-full flex items-center justify-center text-gray-300 text-sm mr-3">
+                                        {{ substr($latestComment->user->name, 0, 1) }}
+                                    </div>
+                                @endif
+
+                                <!-- Comment Content -->
+                                <div>
+                                    <p class="text-sm text-gray-300">
+                                        <strong>{{ $latestComment->user->name }}</strong> •
+                                        {{ $latestComment->created_at->diffForHumans() }}
+                                    </p>
+                                    <p class="text-gray-200 mt-1">{{ Str::limit($latestComment->content, 100) }}</p>
+                                </div>
+                            </div>
+
+                            <!-- View All Comments Button -->
+                            <div class="mt-2">
+                                <a href="{{ route('posts.comments', $post->id) }}"
+                                    class="text-blue-400 hover:text-blue-300 transition duration-200">
+                                    View all comments ({{ $post->comments->count() }})
+                                </a>
+                            </div>
+                        @endif
 
                         <!-- Actions (View, Edit, Delete) -->
                         <div class="mt-4">
@@ -105,6 +139,7 @@
                         </div>
                     </div>
                 @endforeach
+
             </div>
         </main>
     </div>

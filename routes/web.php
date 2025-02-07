@@ -29,6 +29,7 @@ Route::middleware('auth')->group(function () {
 });
 
 Route::post('/posts/{post}/comments', [CommentController::class, 'store'])->middleware('auth')->name('comments.store');
+Route::get('/posts/{post}/comments', [CommentController::class, 'showComments'])->name('posts.comments');
 
 
 
