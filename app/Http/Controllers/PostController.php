@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Post;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 class PostController extends Controller
 {
@@ -33,9 +34,16 @@ class PostController extends Controller
         $request->validate([
             'title' => 'required',
             'content' => 'required',
+            'post_photo' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048'
         ]);
 
-        Auth::user()->posts()->create($request->only('title', 'content'));
+        $data = $request->only('title', 'content');
+
+        if ($request->hasFile('post_photo')) {
+            $data['post_photo'] = $request->file('post_photo')->store('post_photos', 'public');
+        }
+
+        Auth::user()->posts()->create($data);
 
         return redirect()->route('posts.index')->with('success', 'Post created successfully.');
     }
@@ -72,9 +80,20 @@ class PostController extends Controller
         $request->validate([
             'title' => 'required',
             'content' => 'required',
+            'post_photo' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
         ]);
 
-        $post->update($request->only('title', 'content'));
+        $data = $request->only('title', 'content');
+
+        if ($request->hasfile('post_photo')) {
+
+            if ($post->post_photo) {
+                Storage::disk('public')->delete($post->post_photo);
+            }
+            $data['post_photo'] = $request->file('post_photo')->store('post_photos', 'public');
+        }
+
+        $post->update($data);
 
         return redirect()->route('posts.index')->with('success', 'Post updated successfully.');
     }
