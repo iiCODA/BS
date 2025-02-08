@@ -12,17 +12,21 @@ class CommentController extends Controller
     public function store(Request $request, $postId)
     {
         $request->validate([
-            'content' => 'required|string|max:1000',
+            'content' => 'required|string|max:500',
+            'parent_id' => 'nullable|exists:comments,id' // Ensure parent_id is valid
         ]);
 
-        Comment::create([
-            'user_id' => Auth::id(),
-            'post_id' => $postId,
-            'content' => $request->content,
-        ]);
+        $comment = new Comment();
+        $comment->content = $request->content;
+        $comment->user_id = Auth::id();
+        $comment->post_id = $postId;
+        $comment->parent_id = $request->parent_id ?? null; // Assign parent_id correctly
+        $comment->save();
 
-        return back()->with('success', 'Comment added!');
+        return redirect()->back()->with('success', 'Comment added successfully!');
     }
+
+
 
 
     public function showComments(Post $post)

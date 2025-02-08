@@ -26,30 +26,67 @@
         <h2 class="text-xl font-semibold mb-4">All Comments</h2>
 
         <!-- Scrollable Comments Section -->
-        <div class="space-y-4 mt-4 overflow-auto max-h-[60vh] pb-24"> <!-- Max height to keep comments scrollable -->
-            @foreach ($post->comments as $comment)
-                <div class="bg-gray-700 p-4 rounded-lg flex items-start">
-                    <!-- Profile Photo -->
-                    @if ($comment->user->profile_photo)
-                        <img src="{{ asset('storage/' . $comment->user->profile_photo) }}"
-                            alt="{{ $comment->user->name }}" class="w-10 h-10 rounded-full object-cover mr-3">
-                    @else
-                        <div
-                            class="w-10 h-10 bg-gray-600 rounded-full flex items-center justify-center text-gray-300 text-sm mr-3">
-                            {{ substr($comment->user->name, 0, 1) }}
-                        </div>
-                    @endif
+        <d<div class="space-y-4 mt-4 overflow-auto max-h-[60vh] pb-24">
+            @foreach ($post->comments->where('parent_id', null) as $comment)
+                <div class="bg-gray-700 p-4 rounded-lg mb-2">
+                    <!-- Parent Comment -->
+                    <div class="flex items-start">
+                        <!-- Profile Photo -->
+                        @if ($comment->user->profile_photo)
+                            <img src="{{ asset('storage/' . $comment->user->profile_photo) }}"
+                                class="w-10 h-10 rounded-full object-cover mr-3">
+                        @else
+                            <div
+                                class="w-10 h-10 bg-gray-600 rounded-full flex items-center justify-center text-gray-300 text-sm">
+                                {{ substr($comment->user->name, 0, 1) }}
+                            </div>
+                        @endif
 
-                    <!-- Comment Content -->
-                    <div>
-                        <p class="text-sm text-gray-300">
-                            <strong>{{ $comment->user->name }}</strong> • {{ $comment->created_at->diffForHumans() }}
-                        </p>
-                        <p class="text-gray-200 mt-1">{{ $comment->content }}</p>
+                        <!-- Comment Content -->
+                        <div>
+                            <p class="text-sm text-gray-300">
+                                <strong>{{ $comment->user->name }}</strong> •
+                                {{ $comment->created_at->diffForHumans() }}
+                            </p>
+                            <p class="text-gray-200 mt-1"
+                                style="word-wrap: break-word; overflow-wrap: break-word; white-space: normal; max-width: 100%;">
+                                {{ $comment->content }}
+                            </p>
+
+                            <!-- Reply Button -->
+                            <button class="text-blue-400 text-sm mt-2" onclick="toggleReplyForm({{ $comment->id }})">
+                                Reply
+                            </button>
+
+                            <!-- Reply Form -->
+                            <form action="{{ route('comments.store', $post->id) }}" method="POST"
+                                class="mt-2 hidden reply-form-{{ $comment->id }}">
+                                @csrf
+                                <input type="hidden" name="parent_id" value="{{ $comment->id }}">
+                                <textarea name="content" rows="2" class="w-full p-2 bg-gray-800 text-gray-100 rounded"
+                                    placeholder="Write a reply..." required></textarea>
+                                <button type="submit"
+                                    class="mt-2 bg-blue-500 hover:bg-blue-600 text-white py-1 px-3 rounded">
+                                    Reply
+                                </button>
+                            </form>
+
+                            <!-- Display Nested Replies Recursively -->
+                            @if ($comment->replies->count() > 0)
+                                <div class="ml-10 mt-3 border-l-2 border-gray-600 pl-4">
+                                    @foreach ($comment->replies as $reply)
+                                        @include('comments.comment', ['comment' => $reply])
+                                    @endforeach
+                                </div>
+                            @endif
+                        </div>
                     </div>
                 </div>
             @endforeach
-        </div>
+
+
+    </div>
+
     </div>
 
     <!-- Fixed Comment Input -->
@@ -68,6 +105,14 @@
             You must <a href="{{ route('login') }}" class="text-blue-400">log in</a> to comment.
         </div>
     @endif
+
+
+    <script>
+        function toggleReplyForm(commentId) {
+            document.querySelector('.reply-form-' + commentId).classList.toggle('hidden');
+        }
+    </script>
+
 
 </body>
 
