@@ -58,6 +58,12 @@
             <p class="text-gray-400">Joined {{ $user->created_at->format('F Y') }}</p>
         </div>
 
+        <!-- Back Button -->
+        <a href="{{ route('posts.index') }}"
+            class="inline-block mb-4 mt-3 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition duration-200">
+            Back to Posts
+        </a>
+
         <!-- User's Posts -->
         <h2 class="text-xl font-semibold mt-8">Posts by {{ $user->name }}</h2>
         <div class="mt-4 space-y-6">
