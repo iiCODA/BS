@@ -20,13 +20,19 @@
                 <!-- User Dropdown -->
                 <div class="relative">
                     <button class="flex items-center focus:outline-none">
-                        <span class="mr-2">{{ Auth::user()->name }}</span>
+                        <a href="{{ route('profile.show', Auth::user()->id) }}"
+                            class="mr-2 text-blue-400 hover:underline">
+                            {{ Auth::user()->name }}
+                        </a>
+
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"
                             xmlns="http://www.w3.org/2000/svg">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7">
                             </path>
                         </svg>
                     </button>
+
+
 
                     <!-- Dropdown Menu -->
 
@@ -45,7 +51,7 @@
         </header>
 
         <!-- Main Content -->
-        <main class="container mx-auto p-6">
+        <main class="container mx-auto p-6 "> <!-- Added mt-16 to account for fixed navbar height -->
             <!-- Create Post Button -->
             <a href="{{ route('posts.create') }}"
                 class="bg-blue-600 text-white px-4 py-2 rounded mb-6 inline-block hover:bg-blue-700 transition duration-200">
@@ -58,17 +64,26 @@
                     <div class="bg-gray-800 p-6 rounded-lg shadow-lg">
                         <!-- Publisher Info -->
                         <div class="flex items-center mb-4">
-                            @if ($post->user->profile_photo)
-                                <img src="{{ asset('storage/' . $post->user->profile_photo) }}"
-                                    alt="{{ $post->user->name }}" class="w-10 h-10 rounded-full object-cover mr-3">
-                            @else
-                                <div class="w-10 h-10 bg-gray-600 rounded-full flex items-center justify-center mr-3">
-                                    <span class="text-gray-300 text-sm">{{ substr($post->user->name, 0, 1) }}</span>
-                                </div>
-                            @endif
+                            <a href="{{ route('profile.show', $post->user->id) }}">
+                                @if ($post->user->profile_photo)
+                                    <img src="{{ asset('storage/' . $post->user->profile_photo) }}"
+                                        alt="{{ $post->user->name }}" class="w-10 h-10 rounded-full object-cover mr-3">
+                                @else
+                                    <div
+                                        class="w-10 h-10 bg-gray-600 rounded-full flex items-center justify-center mr-3">
+                                        <span class="text-gray-300 text-sm">{{ substr($post->user->name, 0, 1) }}</span>
+                                    </div>
+                                @endif
+                            </a>
                             <div>
-                                <p class="font-semibold">{{ $post->user->name }}</p>
-                                <p class="text-sm text-gray-400">{{ $post->created_at->diffForHumans() }}</p>
+                                <a href="{{ route('profile.show', $post->user->id) }}"
+                                    class="text-blue-400 hover:underline">
+                                    {{ $post->user->name }}
+                                </a>
+                                <p class="text-sm text-gray-400">
+                                    {{ $post->created_at->format('F j, Y \a\t g:i A') }} •
+                                    {{ $post->created_at->diffForHumans() }}
+                                </p>
                             </div>
                         </div>
 
@@ -92,23 +107,25 @@
                                 @endphp
 
                                 <!-- Commenter Profile Photo -->
-                                @if ($latestComment->user->profile_photo)
-                                    <img src="{{ asset('storage/' . $latestComment->user->profile_photo) }}"
-                                        alt="{{ $latestComment->user->name }}"
-                                        class="w-8 h-8 rounded-full object-cover mr-3">
-                                @else
-                                    <div
-                                        class="w-8 h-8 bg-gray-600 rounded-full flex items-center justify-center text-gray-300 text-sm mr-3">
-                                        {{ substr($latestComment->user->name, 0, 1) }}
-                                    </div>
-                                @endif
+                                <a href="{{ route('profile.show', $latestComment->user->id) }}">
+                                    @if ($latestComment->user->profile_photo)
+                                        <img src="{{ asset('storage/' . $latestComment->user->profile_photo) }}"
+                                            alt="{{ $latestComment->user->name }}"
+                                            class="w-8 h-8 rounded-full object-cover mr-3">
+                                    @else
+                                        <div
+                                            class="w-8 h-8 bg-gray-600 rounded-full flex items-center justify-center text-gray-300 text-sm mr-3">
+                                            {{ substr($latestComment->user->name, 0, 1) }}
+                                        </div>
+                                    @endif
+                                </a>
 
                                 <!-- Comment Content -->
                                 <div>
-                                    <p class="text-sm text-gray-300">
-                                        <strong>{{ $latestComment->user->name }}</strong> •
-                                        {{ $latestComment->created_at->diffForHumans() }}
-                                    </p>
+                                    <a href="{{ route('profile.show', $latestComment->user->id) }}"
+                                        class="text-blue-400 hover:underline">
+                                        <strong>{{ $latestComment->user->name }}</strong>
+                                    </a> • {{ $latestComment->created_at->diffForHumans() }}
                                     <p class="text-gray-200 mt-1">{{ Str::limit($latestComment->content, 100) }}</p>
                                 </div>
                             </div>
@@ -139,29 +156,27 @@
                         </div>
                     </div>
                 @endforeach
-
             </div>
         </main>
-    </div>
 
-    <!-- Script for Dropdown Toggle -->
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const dropdownButton = document.querySelector('header button');
-            const dropdownMenu = document.querySelector('header .relative .hidden');
+        <!-- Script for Dropdown Toggle -->
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                const dropdownButton = document.querySelector('header button');
+                const dropdownMenu = document.querySelector('header .relative .hidden');
 
-            dropdownButton.addEventListener('click', function() {
-                dropdownMenu.classList.toggle('hidden');
+                dropdownButton.addEventListener('click', function() {
+                    dropdownMenu.classList.toggle('hidden');
+                });
+
+                // Close dropdown when clicking outside
+                document.addEventListener('click', function(event) {
+                    if (!dropdownButton.contains(event.target) && !dropdownMenu.contains(event.target)) {
+                        dropdownMenu.classList.add('hidden');
+                    }
+                });
             });
-
-            // Close dropdown when clicking outside
-            document.addEventListener('click', function(event) {
-                if (!dropdownButton.contains(event.target) && !dropdownMenu.contains(event.target)) {
-                    dropdownMenu.classList.add('hidden');
-                }
-            });
-        });
-    </script>
+        </script>
 </body>
 
 </html>

@@ -8,24 +8,38 @@
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
 </head>
 
-<body class="bg-gray-100">
-    <div class="container mx-auto p-4">
+<body class="bg-gray-900 text-gray-100">
+    <div class="container mx-auto p-6">
+        <!-- Back Button -->
+        <a href="{{ route('posts.index') }}"
+            class="inline-block mb-6 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition duration-200">
+            Back to Posts
+        </a>
         <h1 class="text-3xl font-bold mb-6">Edit Post</h1>
+
         <form action="{{ route('posts.update', $post) }}" method="POST" enctype="multipart/form-data"
-            class="bg-white p-6 rounded-lg shadow-md">
+            class="bg-gray-800 p-6 rounded-lg shadow-lg">
             @csrf
             @method('PUT')
+
+            <!-- Post Title -->
             <div class="mb-4">
-                <label for="title" class="block text-gray-700 font-semibold mb-2">Title</label>
+                <label for="title" class="block text-gray-300 font-semibold mb-2">Title</label>
                 <input type="text" name="title" id="title" value="{{ $post->title }}"
-                    class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    class="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg 
+                           focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-100"
                     required>
             </div>
+
+            <!-- Post Content -->
             <div class="mb-4">
-                <label for="content" class="block text-gray-700 font-semibold mb-2">Content</label>
+                <label for="content" class="block text-gray-300 font-semibold mb-2">Content</label>
                 <textarea name="content" id="content" rows="6"
-                    class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" required>{{ $post->content }}</textarea>
+                    class="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg 
+                           focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-100"
+                    required>{{ $post->content }}</textarea>
             </div>
+
             <!-- Current Post Photo -->
             @if ($post->post_photo)
                 <img src="{{ asset('storage/' . $post->post_photo) }}" alt="Post Image"
@@ -34,16 +48,20 @@
 
             <!-- File Input for New Photo -->
             <div class="mb-4">
-                <label for="post_photo" class="block text-gray-700 font-semibold mb-2">Change Post Photo</label>
+                <label for="post_photo" class="block text-gray-300 font-semibold mb-2">Change Post Photo</label>
                 <input type="file" name="post_photo" id="post_photo"
-                    class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    class="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg 
+                           focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-100">
             </div>
-            <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600">Update
-                Post</button>
-        </form>
 
-        <a href="{{ route('posts.index') }}" class="inline-block mt-6 text-blue-500 hover:underline">Back to Posts</a>
+            <!-- Update Button -->
+            <button type="submit"
+                class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition duration-200">
+                Update Post
+            </button>
+        </form>
     </div>
+
 </body>
 
 </html>

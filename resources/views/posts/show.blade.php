@@ -12,7 +12,7 @@
     <div class="container mx-auto p-4">
         <!-- Back Button -->
         <a href="{{ route('posts.index') }}"
-            class="inline-block mb-6 text-blue-400 hover:text-blue-300 transition duration-200">
+            class="inline-block mb-6 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition duration-200">
             Back to Posts
         </a>
 
@@ -21,19 +21,26 @@
             <!-- Publisher Info -->
             <div class="flex items-center mb-6">
                 <!-- Profile Photo -->
-                @if ($post->user->profile_photo)
-                    <img src="{{ asset('storage/' . $post->user->profile_photo) }}" alt="{{ $post->user->name }}"
-                        class="w-10 h-10 rounded-full object-cover mr-3">
-                @else
-                    <div class="w-10 h-10 bg-gray-600 rounded-full flex items-center justify-center mr-3">
-                        <span class="text-gray-300 text-sm">{{ substr($post->user->name, 0, 1) }}</span>
-                    </div>
-                @endif
+                <a href="{{ route('profile.show', $post->user->id) }}" class="flex items-center">
+                    @if ($post->user->profile_photo)
+                        <img src="{{ asset('storage/' . $post->user->profile_photo) }}" alt="{{ $post->user->name }}"
+                            class="w-10 h-10 rounded-full object-cover mr-3">
+                    @else
+                        <div class="w-10 h-10 bg-gray-600 rounded-full flex items-center justify-center mr-3">
+                            <span class="text-gray-300 text-sm">{{ substr($post->user->name, 0, 1) }}</span>
+                        </div>
+                    @endif
+                </a>
 
                 <!-- Publisher Name and Timestamp -->
                 <div>
-                    <p class="font-semibold">{{ $post->user->name }}</p>
-                    <p class="text-sm text-gray-400">{{ $post->created_at->diffForHumans() }}</p>
+                    <a href="{{ route('profile.show', $post->user->id) }}" class="text-blue-400 hover:underline">
+                        {{ $post->user->name }}
+                    </a>
+                    <p class="text-sm text-gray-400">
+                        {{ $post->created_at->format('F j, Y \a\t g:i A') }} •
+                        {{ $post->created_at->diffForHumans() }}
+                    </p>
                 </div>
             </div>
 
@@ -55,21 +62,26 @@
                 @foreach ($post->comments->take(3) as $comment)
                     <div class="bg-gray-700 p-4 rounded-lg flex items-start">
                         <!-- Profile Photo -->
-                        @if ($comment->user->profile_photo)
-                            <img src="{{ asset('storage/' . $comment->user->profile_photo) }}"
-                                alt="{{ $comment->user->name }}" class="w-10 h-10 rounded-full object-cover mr-3">
-                        @else
-                            <div
-                                class="w-10 h-10 bg-gray-600 rounded-full flex items-center justify-center text-gray-300 text-sm mr-3">
-                                {{ substr($comment->user->name, 0, 1) }}
-                            </div>
-                        @endif
+                        <a href="{{ route('profile.show', $comment->user->id) }}" class="flex items-center">
+                            @if ($comment->user->profile_photo)
+                                <img src="{{ asset('storage/' . $comment->user->profile_photo) }}"
+                                    alt="{{ $comment->user->name }}" class="w-10 h-10 rounded-full object-cover mr-3">
+                            @else
+                                <div
+                                    class="w-10 h-10 bg-gray-600 rounded-full flex items-center justify-center text-gray-300 text-sm mr-3">
+                                    {{ substr($comment->user->name, 0, 1) }}
+                                </div>
+                            @endif
+                        </a>
 
                         <!-- Comment Content -->
                         <div>
                             <p class="text-sm text-gray-300">
-                                <strong>{{ $comment->user->name }}</strong> •
-                                {{ $comment->created_at->diffForHumans() }}
+                                <a href="{{ route('profile.show', $comment->user->id) }}"
+                                    class="font-semibold hover:text-blue-400">
+                                    {{ $comment->user->name }}
+                                </a>
+                                • {{ $comment->created_at->diffForHumans() }}
                             </p>
                             <p class="text-gray-200 mt-2">{{ $comment->content }}</p>
                         </div>
@@ -85,8 +97,6 @@
                     </a>
                 </div>
             @endif
-
-
 
             @if (Auth::check())
                 <form action="{{ route('comments.store', $post->id) }}" method="POST" class="mt-6">

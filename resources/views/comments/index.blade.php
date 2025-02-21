@@ -9,13 +9,12 @@
 </head>
 
 <body class="bg-gray-900 text-gray-100">
-    <div class="container mx-auto p-6 pb-20"> <!-- Ensure padding-bottom for fixed comment box -->
+    <div class="container mx-auto p-6 pb-20">
         <!-- Back Button -->
         <a href="{{ route('posts.index') }}"
-            class="inline-block mb-6 text-blue-400 hover:text-blue-300 transition duration-200">
+            class="inline-block mb-6 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition duration-200">
             Back to Posts
         </a>
-
         <!-- Post Details -->
         <div class="bg-gray-800 p-6 rounded-lg shadow-lg mb-6">
             <h2 class="text-2xl font-semibold mb-2">{{ $post->title }}</h2>
@@ -26,7 +25,7 @@
         <h2 class="text-xl font-semibold mb-4">All Comments</h2>
 
         <!-- Scrollable Comments Section -->
-        <d<div class="space-y-4 mt-4 overflow-auto max-h-[60vh] pb-24">
+        <div class="space-y-4 mt-4 overflow-auto max-h-[60vh] pb-24">
             @foreach ($post->comments->where('parent_id', null) as $comment)
                 <div class="bg-gray-700 p-4 rounded-lg mb-2">
                     <!-- Parent Comment -->
@@ -48,10 +47,7 @@
                                 <strong>{{ $comment->user->name }}</strong> •
                                 {{ $comment->created_at->diffForHumans() }}
                             </p>
-                            <p class="text-gray-200 mt-1"
-                                style="word-wrap: break-word; overflow-wrap: break-word; white-space: normal; max-width: 100%;">
-                                {{ $comment->content }}
-                            </p>
+                            <p class="text-gray-200 mt-1">{{ $comment->content }}</p>
 
                             <!-- Reply Button -->
                             <button class="text-blue-400 text-sm mt-2" onclick="toggleReplyForm({{ $comment->id }})">
@@ -84,9 +80,7 @@
                 </div>
             @endforeach
 
-
-    </div>
-
+        </div>
     </div>
 
     <!-- Fixed Comment Input -->
@@ -106,14 +100,31 @@
         </div>
     @endif
 
-
     <script>
+        // Toggle Reply Form
         function toggleReplyForm(commentId) {
             document.querySelector('.reply-form-' + commentId).classList.toggle('hidden');
         }
+
+        // Toggle Comment Visibility
+        function toggleComment(commentId) {
+            const shortComment = document.getElementById('comment-' + commentId + '-short');
+            const fullComment = document.getElementById('comment-' + commentId + '-full');
+            const button = document.querySelector(`button[onclick="toggleComment(${commentId})"]`);
+
+            if (shortComment.classList.contains('hidden')) {
+                // Show short comment, hide full comment
+                shortComment.classList.remove('hidden');
+                fullComment.classList.add('hidden');
+                button.textContent = 'Read More';
+            } else {
+                // Show full comment, hide short comment
+                shortComment.classList.add('hidden');
+                fullComment.classList.remove('hidden');
+                button.textContent = 'Read Less';
+            }
+        }
     </script>
-
-
 </body>
 
 </html>
