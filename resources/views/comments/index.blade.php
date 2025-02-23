@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>All Comments</title>
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
 </head>
 
 <body class="bg-gray-900 text-gray-100">
@@ -15,6 +16,7 @@
             class="inline-block mb-6 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition duration-200">
             Back to Posts
         </a>
+
         <!-- Post Details -->
         <div class="bg-gray-800 p-6 rounded-lg shadow-lg mb-6">
             <h2 class="text-2xl font-semibold mb-2">{{ $post->title }}</h2>
@@ -42,12 +44,41 @@
                         @endif
 
                         <!-- Comment Content -->
-                        <div>
+                        <div class="flex-1">
                             <p class="text-sm text-gray-300">
                                 <strong>{{ $comment->user->name }}</strong> •
                                 {{ $comment->created_at->diffForHumans() }}
                             </p>
                             <p class="text-gray-200 mt-1">{{ $comment->content }}</p>
+
+                            <!-- Like/Dislike buttons -->
+                            <div class="flex items-center space-x-4 mt-2">
+                                <!-- Like Button -->
+                                <button type="button" class="flex items-center text-blue-500"
+                                    onclick="likeComment(event, {{ $post->id }}, {{ $comment->id }})">
+                                    <!-- Thumbs Up Icon -->
+                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                        stroke="currentColor" class="w-5 h-5 mr-2">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M14 9l2-2m0 0l-2-2m2 2H5m9 7h3a4 4 0 004-4V7a4 4 0 00-4-4h-1a2 2 0 00-1.732.986L10 5l-1-2-2 4V15a4 4 0 004 4h1z" />
+                                    </svg>
+                                    Like (<span
+                                        id="like-count-comment-{{ $comment->id }}">{{ $comment->likes->where('type', 'like')->count() }}</span>)
+                                </button>
+
+                                <!-- Dislike Button -->
+                                <button type="button" class="flex items-center text-red-500"
+                                    onclick="dislikeComment(event, {{ $post->id }}, {{ $comment->id }})">
+                                    <!-- Thumbs Down Icon -->
+                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                        stroke="currentColor" class="w-5 h-5 mr-2">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M10 15l-2 2m0 0l2 2m-2-2H5m9-7h3a4 4 0 004-4V7a4 4 0 00-4-4h-1a2 2 0 00-1.732.986L10 5l-1-2-2 4V15a4 4 0 004 4h1z" />
+                                    </svg>
+                                    Dislike (<span
+                                        id="dislike-count-comment-{{ $comment->id }}">{{ $comment->likes->where('type', 'dislike')->count() }}</span>)
+                                </button>
+                            </div>
 
                             <!-- Reply Button -->
                             <button class="text-blue-400 text-sm mt-2" onclick="toggleReplyForm({{ $comment->id }})">
@@ -79,7 +110,6 @@
                     </div>
                 </div>
             @endforeach
-
         </div>
     </div>
 
@@ -106,23 +136,42 @@
             document.querySelector('.reply-form-' + commentId).classList.toggle('hidden');
         }
 
-        // Toggle Comment Visibility
-        function toggleComment(commentId) {
-            const shortComment = document.getElementById('comment-' + commentId + '-short');
-            const fullComment = document.getElementById('comment-' + commentId + '-full');
-            const button = document.querySelector(`button[onclick="toggleComment(${commentId})"]`);
+        // Function to like a comment
+        function likeComment(event, postId, commentId) {
+            event.preventDefault();
 
-            if (shortComment.classList.contains('hidden')) {
-                // Show short comment, hide full comment
-                shortComment.classList.remove('hidden');
-                fullComment.classList.add('hidden');
-                button.textContent = 'Read More';
-            } else {
-                // Show full comment, hide short comment
-                shortComment.classList.add('hidden');
-                fullComment.classList.remove('hidden');
-                button.textContent = 'Read Less';
-            }
+            fetch(`/posts/${postId}/comments/${commentId}/like`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                    },
+                })
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById(`like-count-comment-${commentId}`).innerText = data.likes_count;
+                    document.getElementById(`dislike-count-comment-${commentId}`).innerText = data.dislikes_count;
+                })
+                .catch(error => console.error('Error:', error));
+        }
+
+        // Function to dislike a comment
+        function dislikeComment(event, postId, commentId) {
+            event.preventDefault();
+
+            fetch(`/posts/${postId}/comments/${commentId}/dislike`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                    },
+                })
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById(`like-count-comment-${commentId}`).innerText = data.likes_count;
+                    document.getElementById(`dislike-count-comment-${commentId}`).innerText = data.dislikes_count;
+                })
+                .catch(error => console.error('Error:', error));
         }
     </script>
 </body>

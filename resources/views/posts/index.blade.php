@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>BloGing</title>
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
 </head>
 
 <body class="bg-gray-900 text-gray-100">
@@ -15,7 +16,31 @@
         <header class="bg-gray-800 shadow-md p-4">
             <div class="container mx-auto flex justify-between items-center">
                 <!-- Page Title -->
-                <h1 class="text-2xl font-bold">BloGing</h1>
+                <a href="{{ route('posts.index') }}">
+                    <h1 class="text-2xl font-bold">BloGing</h1>
+                </a>
+
+
+                <!-- Search Bar -->
+                <form action="{{ route('search') }}" method="GET" class="flex items-center space-x-2">
+                    <!-- Dropdown for selecting search type -->
+                    <select name="type"
+                        class="px-3 py-2 rounded-md border border-gray-300 bg-gray-700 text-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <option value="posts" {{ request('type') == 'posts' ? 'selected' : '' }}>Posts</option>
+                        <option value="users" {{ request('type') == 'users' ? 'selected' : '' }}>Users</option>
+                    </select>
+
+                    <!-- Search input -->
+                    <input type="text" name="query" placeholder="Enter search term" value="{{ request('query') }}"
+                        class="px-4 py-2 rounded-md border border-gray-300 bg-gray-700 text-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500">
+
+                    <!-- Submit button -->
+                    <button type="submit"
+                        class="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 focus:outline-none">
+                        Search
+                    </button>
+                </form>
+
 
                 <!-- User Dropdown -->
                 <div class="relative">
@@ -32,10 +57,7 @@
                         </svg>
                     </button>
 
-
-
                     <!-- Dropdown Menu -->
-
                     <div class="absolute right-0 mt-2 w-48 bg-gray-700 rounded-md shadow-lg py-2 hidden">
                         <a href="{{ route('profile.edit') }}"
                             class="block px-4 py-2 text-gray-100 hover:bg-gray-600">Profile</a>
@@ -51,7 +73,7 @@
         </header>
 
         <!-- Main Content -->
-        <main class="container mx-auto p-6 "> <!-- Added mt-16 to account for fixed navbar height -->
+        <main class="container mx-auto p-6">
             <!-- Create Post Button -->
             <a href="{{ route('posts.create') }}"
                 class="bg-blue-600 text-white px-4 py-2 rounded mb-6 inline-block hover:bg-blue-700 transition duration-200">
@@ -71,19 +93,16 @@
                                 @else
                                     <div
                                         class="w-10 h-10 bg-gray-600 rounded-full flex items-center justify-center mr-3">
-                                        <span class="text-gray-300 text-sm">{{ substr($post->user->name, 0, 1) }}</span>
+                                        <span
+                                            class="text-gray-300 text-sm">{{ substr($post->user->name, 0, 1) }}</span>
                                     </div>
                                 @endif
                             </a>
                             <div>
                                 <a href="{{ route('profile.show', $post->user->id) }}"
-                                    class="text-blue-400 hover:underline">
-                                    {{ $post->user->name }}
-                                </a>
-                                <p class="text-sm text-gray-400">
-                                    {{ $post->created_at->format('F j, Y \a\t g:i A') }} •
-                                    {{ $post->created_at->diffForHumans() }}
-                                </p>
+                                    class="text-blue-400 hover:underline">{{ $post->user->name }}</a>
+                                <p class="text-sm text-gray-400">{{ $post->created_at->format('F j, Y \a\t g:i A') }} •
+                                    {{ $post->created_at->diffForHumans() }}</p>
                             </div>
                         </div>
 
@@ -98,6 +117,35 @@
                             <img src="{{ asset('storage/' . $post->post_photo) }}" alt="Post Image"
                                 class="w-full h-64 object-cover rounded-lg mb-4">
                         @endif
+
+                        <!-- Like/Dislike buttons with icons -->
+                        <div class="mt-4 flex space-x-4">
+                            <!-- Like Button -->
+                            <button type="button" class="flex items-center text-blue-500"
+                                onclick="likePost(event, {{ $post->id }})">
+                                <!-- Thumbs Up Icon -->
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                    stroke="currentColor" class="w-5 h-5 mr-2">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M14 9l2-2m0 0l-2-2m2 2H5m9 7h3a4 4 0 004-4V7a4 4 0 00-4-4h-1a2 2 0 00-1.732.986L10 5l-1-2-2 4V15a4 4 0 004 4h1z" />
+                                </svg>
+                                Like (<span
+                                    id="like-count-{{ $post->id }}">{{ $post->likes->where('type', 'like')->count() }}</span>)
+                            </button>
+
+                            <!-- Dislike Button -->
+                            <button type="button" class="flex items-center text-red-500"
+                                onclick="dislikePost(event, {{ $post->id }})">
+                                <!-- Thumbs Down Icon -->
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                    stroke="currentColor" class="w-5 h-5 mr-2">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M10 15l-2 2m0 0l2 2m-2-2H5m9-7h3a4 4 0 004-4V7a4 4 0 00-4-4h-1a2 2 0 00-1.732.986L10 5l-1-2-2 4V15a4 4 0 004 4h1z" />
+                                </svg>
+                                Dislike (<span
+                                    id="dislike-count-{{ $post->id }}">{{ $post->likes->where('type', 'dislike')->count() }}</span>)
+                            </button>
+                        </div>
 
                         <!-- Show One Comment (if exists) -->
                         @if ($post->comments->count() > 0)
@@ -123,9 +171,9 @@
                                 <!-- Comment Content -->
                                 <div>
                                     <a href="{{ route('profile.show', $latestComment->user->id) }}"
-                                        class="text-blue-400 hover:underline">
-                                        <strong>{{ $latestComment->user->name }}</strong>
-                                    </a> • {{ $latestComment->created_at->diffForHumans() }}
+                                        class="text-blue-400 hover:underline"><strong>{{ $latestComment->user->name }}</strong></a>
+                                    •
+                                    {{ $latestComment->created_at->diffForHumans() }}
                                     <p class="text-gray-200 mt-1">{{ Str::limit($latestComment->content, 100) }}</p>
                                 </div>
                             </div>
@@ -158,25 +206,64 @@
                 @endforeach
             </div>
         </main>
+    </div>
 
-        <!-- Script for Dropdown Toggle -->
-        <script>
-            document.addEventListener('DOMContentLoaded', function() {
-                const dropdownButton = document.querySelector('header button');
-                const dropdownMenu = document.querySelector('header .relative .hidden');
+    <!-- Script for Dropdown Toggle -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const dropdownButton = document.querySelector('header button');
+            const dropdownMenu = document.querySelector('header .relative .hidden');
 
-                dropdownButton.addEventListener('click', function() {
-                    dropdownMenu.classList.toggle('hidden');
-                });
-
-                // Close dropdown when clicking outside
-                document.addEventListener('click', function(event) {
-                    if (!dropdownButton.contains(event.target) && !dropdownMenu.contains(event.target)) {
-                        dropdownMenu.classList.add('hidden');
-                    }
-                });
+            dropdownButton.addEventListener('click', function() {
+                dropdownMenu.classList.toggle('hidden');
             });
-        </script>
+
+            // Close dropdown when clicking outside
+            document.addEventListener('click', function(event) {
+                if (!dropdownButton.contains(event.target) && !dropdownMenu.contains(event.target)) {
+                    dropdownMenu.classList.add('hidden');
+                }
+            });
+        });
+
+        // AJAX for liking posts
+        function likePost(event, postId) {
+            event.preventDefault();
+
+            fetch(`/posts/${postId}/like`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                    },
+                })
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById(`like-count-${postId}`).innerText = data.likes_count;
+                    document.getElementById(`dislike-count-${postId}`).innerText = data.dislikes_count;
+                })
+                .catch(error => console.error('Error:', error));
+        }
+
+        // AJAX for disliking posts
+        function dislikePost(event, postId) {
+            event.preventDefault();
+
+            fetch(`/posts/${postId}/dislike`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                    },
+                })
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById(`like-count-${postId}`).innerText = data.likes_count;
+                    document.getElementById(`dislike-count-${postId}`).innerText = data.dislikes_count;
+                })
+                .catch(error => console.error('Error:', error));
+        }
+    </script>
 </body>
 
 </html>

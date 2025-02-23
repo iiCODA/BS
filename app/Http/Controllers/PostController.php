@@ -111,4 +111,58 @@ class PostController extends Controller
 
         return redirect()->route('posts.index')->with('success', 'Post deleted successfully.');
     }
+
+    public function like(Post $post)
+    {
+        $user = auth()->user();
+
+        // Check if the user has already liked the post
+        $existingLike = $post->likes()->where('user_id', $user->id)->where('type', 'like')->first();
+
+        // If the user has liked, we remove the like
+        if ($existingLike) {
+            $existingLike->delete();
+        } else {
+            // Remove any dislike first
+            $post->likes()->where('user_id', $user->id)->where('type', 'dislike')->delete();
+
+            // Add the like
+            $post->likes()->create([
+                'user_id' => $user->id,
+                'type' => 'like',
+            ]);
+        }
+
+        return response()->json([
+            'likes_count' => $post->likes->where('type', 'like')->count(),
+            'dislikes_count' => $post->likes->where('type', 'dislike')->count(),
+        ]);
+    }
+
+    public function dislike(Post $post)
+    {
+        $user = auth()->user();
+
+        // Check if the user has already disliked the post
+        $existingDislike = $post->likes()->where('user_id', $user->id)->where('type', 'dislike')->first();
+
+        // If the user has disliked, we remove the dislike
+        if ($existingDislike) {
+            $existingDislike->delete();
+        } else {
+            // Remove any like first
+            $post->likes()->where('user_id', $user->id)->where('type', 'like')->delete();
+
+            // Add the dislike
+            $post->likes()->create([
+                'user_id' => $user->id,
+                'type' => 'dislike',
+            ]);
+        }
+
+        return response()->json([
+            'likes_count' => $post->likes->where('type', 'like')->count(),
+            'dislikes_count' => $post->likes->where('type', 'dislike')->count(),
+        ]);
+    }
 }
