@@ -165,4 +165,26 @@ class PostController extends Controller
             'dislikes_count' => $post->likes->where('type', 'dislike')->count(),
         ]);
     }
+
+    public function share(Request $request)
+    {
+        $request->validate([
+            'post_id' => 'required|exists:posts,id',
+            'content' => 'nullable|string|max:500',
+        ]);
+
+        // Get the original post
+        $originalPost = Post::findOrFail($request->post_id);
+
+        // Create a new post with the shared content
+        $sharedPost = Post::create([
+            'user_id' => Auth::id(),
+            'title' => 'Shared Post: ' . $originalPost->title,
+            'content' => $request->content ?? 'Shared post from ' . $originalPost->user->name,
+            'post_photo' => $originalPost->post_photo, // Optionally share the photo
+            'shared_post_id' => $originalPost->id, // Reference the original post
+        ]);
+
+        return response()->json(['success' => true]);
+    }
 }

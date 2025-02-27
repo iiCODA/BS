@@ -29,7 +29,7 @@ Route::middleware('auth')->group(function () {
 Route::middleware('auth')->group(function () {
     Route::post('/posts/{post}/like', [PostController::class, 'like'])->name('posts.like');
     Route::post('/posts/{post}/dislike', [PostController::class, 'dislike'])->name('posts.dislike');
-
+    Route::post('/posts/share', [PostController::class, 'share'])->name('posts.share');
     Route::post('/posts/{post}/comments/{comment}/like', [CommentController::class, 'like'])->name('comments.like');
     Route::post('/posts/{post}/comments/{comment}/dislike', [CommentController::class, 'dislike'])->name('comments.dislike');
 });

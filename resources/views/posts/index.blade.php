@@ -20,7 +20,6 @@
                     <h1 class="text-2xl font-bold">BloGing</h1>
                 </a>
 
-
                 <!-- Search Bar -->
                 <form action="{{ route('search') }}" method="GET" class="flex items-center space-x-2">
                     <!-- Dropdown for selecting search type -->
@@ -40,7 +39,6 @@
                         Search
                     </button>
                 </form>
-
 
                 <!-- User Dropdown -->
                 <div class="relative">
@@ -187,7 +185,7 @@
                             </div>
                         @endif
 
-                        <!-- Actions (View, Edit, Delete) -->
+                        <!-- Actions (View, Edit, Delete, Share) -->
                         <div class="mt-4">
                             <a href="{{ route('posts.show', $post) }}"
                                 class="text-blue-400 hover:text-blue-300 transition duration-200">View</a>
@@ -201,11 +199,99 @@
                                         class="text-red-400 hover:text-red-300 ml-4 transition duration-200">Delete</button>
                                 </form>
                             @endif
+                            <!-- Share Button -->
+                            <button onclick="openShareModal({{ $post->id }})"
+                                class="text-green-400 hover:text-green-300 ml-4 transition duration-200">
+                                Share
+                            </button>
                         </div>
+
+                        <!-- Shared Post Section -->
+                        @if ($post->shared_post_id)
+                            <div class="mt-4 bg-gray-700 p-4 rounded-lg">
+                                <!-- Shared By -->
+                                <div class="flex items-center mb-2">
+                                    <a href="{{ route('profile.show', $post->user->id) }}">
+                                        @if ($post->user->profile_photo)
+                                            <img src="{{ asset('storage/' . $post->user->profile_photo) }}"
+                                                alt="{{ $post->user->name }}"
+                                                class="w-8 h-8 rounded-full object-cover mr-2">
+                                        @else
+                                            <div
+                                                class="w-8 h-8 bg-gray-600 rounded-full flex items-center justify-center text-gray-300 text-sm mr-2">
+                                                {{ substr($post->user->name, 0, 1) }}
+                                            </div>
+                                        @endif
+                                    </a>
+                                    <p class="text-gray-300">
+                                        <a href="{{ route('profile.show', $post->user->id) }}"
+                                            class="text-blue-400 hover:underline">{{ $post->user->name }}</a>
+                                        shared a post.
+                                    </p>
+                                </div>
+
+                                <!-- Original Post -->
+                                <div class="bg-gray-800 p-4 rounded-lg">
+                                    <!-- Original Post Author -->
+                                    <div class="flex items-center mb-2">
+                                        <a href="{{ route('profile.show', $post->sharedPost->user->id) }}">
+                                            @if ($post->sharedPost->user->profile_photo)
+                                                <img src="{{ asset('storage/' . $post->sharedPost->user->profile_photo) }}"
+                                                    alt="{{ $post->sharedPost->user->name }}"
+                                                    class="w-8 h-8 rounded-full object-cover mr-2">
+                                            @else
+                                                <div
+                                                    class="w-8 h-8 bg-gray-600 rounded-full flex items-center justify-center text-gray-300 text-sm mr-2">
+                                                    {{ substr($post->sharedPost->user->name, 0, 1) }}
+                                                </div>
+                                            @endif
+                                        </a>
+                                        <p class="text-gray-300">
+                                            <a href="{{ route('profile.show', $post->sharedPost->user->id) }}"
+                                                class="text-blue-400 hover:underline">{{ $post->sharedPost->user->name }}</a>
+                                            •
+                                            {{ $post->sharedPost->created_at->diffForHumans() }}
+                                        </p>
+                                    </div>
+
+                                    <!-- Original Post Content -->
+                                    <h3 class="text-xl font-semibold">{{ $post->sharedPost->title }}</h3>
+                                    <p class="text-gray-200">{{ $post->sharedPost->content }}</p>
+
+                                    <!-- Original Post Image -->
+                                    @if ($post->sharedPost->post_photo)
+                                        <img src="{{ asset('storage/' . $post->sharedPost->post_photo) }}"
+                                            alt="Original Post Image"
+                                            class="w-full h-64 object-cover rounded-lg mt-2">
+                                    @endif
+                                </div>
+                            </div>
+                        @endif
                     </div>
                 @endforeach
             </div>
         </main>
+    </div>
+
+    <!-- Share Post Modal -->
+    <div id="shareModal" class="fixed inset-0 bg-gray-900 bg-opacity-50 hidden">
+        <div class="flex items-center justify-center min-h-screen">
+            <div class="bg-gray-800 p-6 rounded-lg shadow-lg w-1/3">
+                <h2 class="text-xl font-semibold mb-4">Share Post</h2>
+                <form id="shareForm" method="POST" action="{{ route('posts.share') }}">
+                    @csrf
+                    <input type="hidden" name="post_id" id="sharedPostId">
+                    <textarea name="content" rows="3" class="w-full p-2 bg-gray-700 text-gray-100 rounded"
+                        placeholder="Add a message (optional)"></textarea>
+                    <div class="mt-4 flex justify-end space-x-2">
+                        <button type="button" onclick="closeShareModal()"
+                            class="bg-gray-600 text-white px-4 py-2 rounded hover:bg-gray-700">Cancel</button>
+                        <button type="submit"
+                            class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600">Share</button>
+                    </div>
+                </form>
+            </div>
+        </div>
     </div>
 
     <!-- Script for Dropdown Toggle -->
@@ -263,6 +349,42 @@
                 })
                 .catch(error => console.error('Error:', error));
         }
+
+        // Function to open the share modal
+        function openShareModal(postId) {
+            document.getElementById('sharedPostId').value = postId;
+            document.getElementById('shareModal').classList.remove('hidden');
+        }
+
+        // Function to close the share modal
+        function closeShareModal() {
+            document.getElementById('shareModal').classList.add('hidden');
+        }
+
+        // Handle form submission for sharing a post
+        document.getElementById('shareForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+            const formData = new FormData(this);
+
+            fetch(this.action, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute(
+                            'content'),
+                    },
+                    body: formData,
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        closeShareModal();
+                        window.location.reload(); // Reload the page to show the shared post
+                    } else {
+                        alert('Failed to share the post.');
+                    }
+                })
+                .catch(error => console.error('Error:', error));
+        });
     </script>
 </body>
 

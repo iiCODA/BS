@@ -34,6 +34,35 @@
                 {{ $comment->content }}
             </p>
 
+            <!-- Like/Dislike Buttons -->
+            <div class="flex items-center space-x-4 mt-2">
+                <!-- Like Button -->
+                <button type="button" class="flex items-center text-blue-500"
+                    onclick="likeComment(event, {{ $comment->post_id }}, {{ $comment->id }})">
+                    <!-- Thumbs Up Icon -->
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                        stroke="currentColor" class="w-5 h-5 mr-2">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M14 9l2-2m0 0l-2-2m2 2H5m9 7h3a4 4 0 004-4V7a4 4 0 00-4-4h-1a2 2 0 00-1.732.986L10 5l-1-2-2 4V15a4 4 0 004 4h1z" />
+                    </svg>
+                    Like (<span
+                        id="like-count-comment-{{ $comment->id }}">{{ $comment->likes->where('type', 'like')->count() }}</span>)
+                </button>
+
+                <!-- Dislike Button -->
+                <button type="button" class="flex items-center text-red-500"
+                    onclick="dislikeComment(event, {{ $comment->post_id }}, {{ $comment->id }})">
+                    <!-- Thumbs Down Icon -->
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                        stroke="currentColor" class="w-5 h-5 mr-2">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M10 15l-2 2m0 0l2 2m-2-2H5m9-7h3a4 4 0 004-4V7a4 4 0 00-4-4h-1a2 2 0 00-1.732.986L10 5l-1-2-2 4V15a4 4 0 004 4h1z" />
+                    </svg>
+                    Dislike (<span
+                        id="dislike-count-comment-{{ $comment->id }}">{{ $comment->likes->where('type', 'dislike')->count() }}</span>)
+                </button>
+            </div>
+
             <!-- Reply Button -->
             <button class="text-blue-400 text-sm mt-2" onclick="toggleReplyForm({{ $comment->id }})">
                 Reply
