@@ -66,6 +66,11 @@
 
         <!-- User's Posts -->
         <h2 class="text-xl font-semibold mt-8">Posts by {{ $user->name }}</h2>
+        <!-- Create Post Button -->
+        <a href="{{ route('posts.create') }}"
+            class="bg-blue-600 text-white px-4 py-2 rounded mb-6 inline-block hover:bg-blue-700 transition duration-200">
+            Create New Post
+        </a>
         <div class="mt-4 space-y-6">
             @foreach ($posts as $post)
                 <div class="bg-gray-800 p-6 rounded-lg shadow-lg">

@@ -43,12 +43,29 @@
                 <!-- User Dropdown -->
                 <div class="relative">
                     <button class="flex items-center focus:outline-none">
-                        <a href="{{ route('profile.show', Auth::user()->id) }}"
-                            class="mr-2 text-blue-400 hover:underline">
-                            {{ Auth::user()->name }}
+                        <!-- Wrap both the photo and username in the same <a> tag -->
+                        <a href="{{ route('profile.show', Auth::user()->id) }}" class="flex items-center">
+                            <!-- User Photo -->
+                            <div class="mr-2">
+                                @if (Auth::user()->profile_photo)
+                                    <img src="{{ asset('storage/' . Auth::user()->profile_photo) }}"
+                                        alt="{{ Auth::user()->name }}" class="w-8 h-8 rounded-full object-cover">
+                                @else
+                                    <div
+                                        class="w-8 h-8 bg-gray-600 rounded-full flex items-center justify-center text-gray-300 text-sm">
+                                        {{ substr(Auth::user()->name, 0, 1) }}
+                                    </div>
+                                @endif
+                            </div>
+
+                            <!-- User Name -->
+                            <span class="text-blue-400 hover:underline">
+                                {{ Auth::user()->name }}
+                            </span>
                         </a>
 
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                        <!-- Dropdown Arrow -->
+                        <svg class="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"
                             xmlns="http://www.w3.org/2000/svg">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7">
                             </path>
@@ -67,7 +84,6 @@
                         </form>
                     </div>
                 </div>
-            </div>
         </header>
 
         <!-- Main Content -->
@@ -208,65 +224,63 @@
 
                         <!-- Shared Post Section -->
                         @if ($post->shared_post_id)
-                            <div class="mt-4 bg-gray-700 p-4 rounded-lg">
-                                <!-- Shared By -->
-                                <div class="flex items-center mb-2">
+                            <div class="mt-4 bg-gray-800 p-4 rounded-lg shadow-lg">
+                                <!-- Shared By (Main Post User) -->
+                                <div class="flex items-center mb-3">
                                     <a href="{{ route('profile.show', $post->user->id) }}">
-                                        @if ($post->user->profile_photo)
-                                            <img src="{{ asset('storage/' . $post->user->profile_photo) }}"
-                                                alt="{{ $post->user->name }}"
-                                                class="w-8 h-8 rounded-full object-cover mr-2">
-                                        @else
-                                            <div
-                                                class="w-8 h-8 bg-gray-600 rounded-full flex items-center justify-center text-gray-300 text-sm mr-2">
-                                                {{ substr($post->user->name, 0, 1) }}
-                                            </div>
-                                        @endif
+                                        <img src="{{ asset('storage/' . ($post->user->profile_photo ?? 'default.png')) }}"
+                                            alt="{{ $post->user->name }}"
+                                            class="w-10 h-10 rounded-full object-cover mr-3">
                                     </a>
-                                    <p class="text-gray-300">
+                                    <div>
                                         <a href="{{ route('profile.show', $post->user->id) }}"
-                                            class="text-blue-400 hover:underline">{{ $post->user->name }}</a>
-                                        shared a post.
-                                    </p>
+                                            class="text-blue-400 hover:underline font-semibold">
+                                            {{ $post->user->name }}
+                                        </a>
+                                        <span class="text-gray-300">shared a post from</span>
+                                        <a href="{{ route('profile.show', $post->sharedPost->user->id) }}"
+                                            class="text-blue-400 hover:underline font-semibold">
+                                            {{ $post->sharedPost->user->name }}
+                                        </a>
+                                        <p class="text-sm text-gray-400">{{ $post->created_at->diffForHumans() }}</p>
+                                    </div>
                                 </div>
 
-                                <!-- Original Post -->
-                                <div class="bg-gray-800 p-4 rounded-lg">
+                                <!-- Shared Post (Original Post) -->
+                                <div class="bg-gray-900 p-4 rounded-lg mt-2">
                                     <!-- Original Post Author -->
-                                    <div class="flex items-center mb-2">
+                                    <div class="flex items-center mb-3">
                                         <a href="{{ route('profile.show', $post->sharedPost->user->id) }}">
-                                            @if ($post->sharedPost->user->profile_photo)
-                                                <img src="{{ asset('storage/' . $post->sharedPost->user->profile_photo) }}"
-                                                    alt="{{ $post->sharedPost->user->name }}"
-                                                    class="w-8 h-8 rounded-full object-cover mr-2">
-                                            @else
-                                                <div
-                                                    class="w-8 h-8 bg-gray-600 rounded-full flex items-center justify-center text-gray-300 text-sm mr-2">
-                                                    {{ substr($post->sharedPost->user->name, 0, 1) }}
-                                                </div>
-                                            @endif
+                                            <img src="{{ asset('storage/' . ($post->sharedPost->user->profile_photo ?? 'default.png')) }}"
+                                                alt="{{ $post->sharedPost->user->name }}"
+                                                class="w-8 h-8 rounded-full object-cover mr-2">
                                         </a>
-                                        <p class="text-gray-300">
+                                        <div>
                                             <a href="{{ route('profile.show', $post->sharedPost->user->id) }}"
-                                                class="text-blue-400 hover:underline">{{ $post->sharedPost->user->name }}</a>
-                                            •
-                                            {{ $post->sharedPost->created_at->diffForHumans() }}
-                                        </p>
+                                                class="text-blue-400 hover:underline font-semibold">
+                                                {{ $post->sharedPost->user->name }}
+                                            </a>
+                                            <p class="text-sm text-gray-400">
+                                                {{ $post->sharedPost->created_at->diffForHumans() }}</p>
+                                        </div>
                                     </div>
 
                                     <!-- Original Post Content -->
-                                    <h3 class="text-xl font-semibold">{{ $post->sharedPost->title }}</h3>
-                                    <p class="text-gray-200">{{ $post->sharedPost->content }}</p>
+                                    <h3 class="text-lg font-semibold text-gray-100">{{ $post->sharedPost->title }}
+                                    </h3>
+                                    <p class="text-gray-300">{{ $post->sharedPost->content }}</p>
 
                                     <!-- Original Post Image -->
                                     @if ($post->sharedPost->post_photo)
                                         <img src="{{ asset('storage/' . $post->sharedPost->post_photo) }}"
-                                            alt="Original Post Image"
-                                            class="w-full h-64 object-cover rounded-lg mt-2">
+                                            alt="Shared Post Image" class="w-full h-64 object-cover rounded-lg mt-2">
                                     @endif
                                 </div>
                             </div>
                         @endif
+
+
+
                     </div>
                 @endforeach
             </div>
@@ -297,19 +311,31 @@
     <!-- Script for Dropdown Toggle -->
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            const dropdownButton = document.querySelector('header button');
-            const dropdownMenu = document.querySelector('header .relative .hidden');
+            const dropdownButton = document.querySelector('.relative button');
+            const dropdownMenu = document.querySelector('.relative .absolute');
 
-            dropdownButton.addEventListener('click', function() {
+            dropdownButton.addEventListener('click', function(event) {
+                // Prevent the default behavior of the button
+                event.preventDefault();
+
+                // Toggle the dropdown menu
                 dropdownMenu.classList.toggle('hidden');
             });
 
-            // Close dropdown when clicking outside
+            // Close the dropdown if clicked outside
             document.addEventListener('click', function(event) {
-                if (!dropdownButton.contains(event.target) && !dropdownMenu.contains(event.target)) {
+                if (!dropdownButton.contains(event.target)) {
                     dropdownMenu.classList.add('hidden');
                 }
             });
+
+            // Stop event propagation when the user's name link is clicked
+            const userNameLink = document.querySelector('.relative a');
+            if (userNameLink) {
+                userNameLink.addEventListener('click', function(event) {
+                    event.stopPropagation(); // Stop the event from propagating to the dropdown button
+                });
+            }
         });
 
         // AJAX for liking posts

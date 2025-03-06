@@ -52,8 +52,10 @@
 
             <!-- Post Image -->
             @if ($post->post_photo)
-                <img src="{{ asset('storage/' . $post->post_photo) }}" alt="Post Image"
-                    class="w-full max-h-[500px] object-contain rounded-lg mb-4">
+                <div class="flex justify-center mb-4">
+                    <img src="{{ asset('storage/' . $post->post_photo) }}" alt="Post Image"
+                        class="max-w-full max-h-[500px] object-contain rounded-lg">
+                </div>
             @endif
 
             <h2 class="text-xl font-semibold mt-8 mb-4">Comments</h2>
